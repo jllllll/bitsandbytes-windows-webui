@@ -14,3 +14,5 @@ python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/
 ```
 
 Credit to [Adrian Popescu](https://github.com/acpopescu) at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows
+
+0.38.1 was compiled from here: https://github.com/jllllll/bitsandbytes/tree/cmake_windows

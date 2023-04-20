@@ -7,7 +7,7 @@ Can be installed with the following command:
 ```
 python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/main/bitsandbytes-0.37.2-py3-none-any.whl --force-reinstall
 ```
-0.38.1 Compiled for CUDA 11.6, 11.7, 11.8:
+0.38.1 Compiled for CUDA 11.3, 11.6, 11.7, 11.8:
 ```
 python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/main/bitsandbytes-0.38.1-py3-none-any.whl --force-reinstall
 ```

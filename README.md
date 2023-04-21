@@ -1,6 +1,6 @@
 # bitsandbytes-windows-webui
 Windows compile of bitsandbytes for use in text-generation-webui.
-Compiled for CUDA 11.3, 11.6, 11.7, and 11.8.
+Compiled for CUDA 11.1, 11.3, 11.6, 11.7, and 11.8.
 
 Can be installed with the following command:
 

@@ -1,5 +1,5 @@
 # bitsandbytes-windows-webui
-Windows compile of bitsandbytes for use in text-generation-webui.
+Windows compile of bitsandbytes for use in text-generation-webui.  
 Compiled for CUDA 11.1, 11.3, 11.6, 11.7, and 11.8.
 
 Can be installed with the following command:
@@ -14,5 +14,7 @@ python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/
 ```
 
 Credit to [Adrian Popescu](https://github.com/acpopescu) at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows
+
+0.37.2 was compiled from here: https://github.com/jllllll/bitsandbytes/tree/cmake_windows_0.37.2
 
 0.38.1 was compiled from here: https://github.com/jllllll/bitsandbytes/tree/cmake_windows

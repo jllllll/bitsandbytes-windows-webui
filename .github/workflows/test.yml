@@ -5,7 +5,7 @@ on: workflow_dispatch
 jobs:
   compile_cuda:
     name: Test Install Cuda 11.1.1
-    runs-on: windows-latest
+    runs-on: windows-2019
     defaults:
       run:
         shell: pwsh
@@ -22,4 +22,4 @@ jobs:
         run: |
           echo $env:CUDA_PATH + "`n`n"
           dir $env:CUDA_PATH -recurse
-          dir 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC' -recurse
+          dir 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations'

@@ -22,4 +22,4 @@ jobs:
         run: |
           echo $env:CUDA_PATH + "`n`n"
           dir $env:CUDA_PATH -recurse
-          dir 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations'
+          dir 'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations'

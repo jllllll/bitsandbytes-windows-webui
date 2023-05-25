@@ -3,8 +3,8 @@ Windows compile of bitsandbytes for use in text-generation-webui.
 Compiled for CUDA 11.1, 11.3, 11.6, 11.7, and 11.8.  
 0.38.1+ additionally includes support for 12.0 and 12.1.
 
-**0.39.0 currently doesn't support cards with compute less than 7.0 on Windows due to the use of 7.0+ features.**  
-**To my understanding, this is due to the Windows Cuda Toolkit not supporting those features on older cards.**
+**0.39.0 currently doesn't support cards with compute less than 7.0 on Windows.**  
+**To my understanding, this is a limitation of the Windows Cuda Toolkit.**
 
 Can be installed with the following command:
 

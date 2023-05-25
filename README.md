@@ -18,7 +18,7 @@ python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/
 ```
 0.39.0:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/main/bitsandbytes-0.90.0-py3-none-any.whl --force-reinstall
+python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/raw/main/bitsandbytes-0.90.0-py3-none-any.whl
 ```
 
 Credit to [Adrian Popescu](https://github.com/acpopescu) at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows

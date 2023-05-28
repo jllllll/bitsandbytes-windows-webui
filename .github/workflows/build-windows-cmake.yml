@@ -94,7 +94,7 @@ jobs:
   compile_cuda_old_conda:
     # Uses Windows-2019 and Cuda Toolkit 11.3 - 11.5 with full version spec as string: "11.5.2"
     # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/windows-links.ts for supported versions
-    name: Compile Cuda Code 2019
+    name: Compile Cuda Code 2019-Conda
     runs-on: windows-2019
     strategy:
       matrix:

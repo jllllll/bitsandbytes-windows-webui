@@ -1,0 +1,122 @@
+name: Build bitsandbytes Windows Wheel Test
+
+on: workflow_dispatch
+
+jobs:
+  compile_cuda_new:
+    # Uses Windows-2022 and Cuda Toolkit >= 11.4 with full version spec as string: "11.4.4"
+    # Uses 11.6 as CPU build target, version must be included to build CPU target
+    # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/windows-links.ts for supported versions
+    name: Compile Cuda Code 2022
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        cuda: ["11.4.4"]
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      CUDAVER: ${{ matrix.cuda }}
+
+    steps:
+      - name: Get Visual Studio Integration
+        uses: Jimver/cuda-toolkit@v0.2.10
+        with:
+          cuda: ${{ matrix.cuda }}
+          method: 'network'
+          sub-packages: '["visual_studio_integration"]'
+          
+      - name: Install Visual Studio Integration
+        run: |
+          $x = (dir $env:CUDA_PATH -dir -recurse -depth 2).where({$_.name -eq 'visual_studio_integration'}).fullname
+          $y = (dir $x -dir -recurse).where({$_.name -eq 'MSBuildExtensions'}).fullname + '\*'
+          (gi 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations').fullname.foreach({cp $y $_})
+          
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'cmake_windows'
+        
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - name: Setup Mamba
+        uses: conda-incubator/setup-miniconda@v2.2.0
+        with:
+          activate-environment: "build"
+          python-version: "3.10"
+          mamba-version: "*"
+          use-mamba: true
+          channels: conda-forge,defaults
+          channel-priority: true
+          add-pip-as-python-dependency: true
+          auto-activate-base: false
+          
+      - name: Install Dependencies
+        run: |
+          $cudaVersion = $env:CUDAVER
+          $cudaChannels = ''
+          $cudaNum = [int]$cudaVersion.substring($cudaVersion.LastIndexOf('.')+1)
+          while ($cudaNum -ge 0) { $cudaChannels += '-c nvidia/label/cuda-' + $cudaVersion.Remove($cudaVersion.LastIndexOf('.')+1) + $cudaNum + ' '; $cudaNum-- }
+          $cudaChannels = $cudaChannels.TrimEnd() + ' -c conda-forge -c defaults'
+          mamba install -y 'cmake' 'ninja' 'cuda' $cudaChannels.Split()
+        
+      - name: Compile Cuda Code
+        run: |
+          $env:CUDA_PATH = $env:CONDA_PREFIX
+          $cudaVersion = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.'))
+          $x = 'CUDA_PATH_V' + $cudaVersion.Replace('.','_')
+          [Environment]::SetEnvironmentVariable($x, $env:CUDA_PATH)
+          if (!(Test-Path '.\BuildArtifacts\')) { mkdir '.\BuildArtifacts' }
+          cmake -S . -B "./build_$cudaVersion_0" -G "Visual Studio 17 2022" -T "cuda=$cudaVersion" -D "NO_CUBLASLT=0" -D "CUDA_TARGET_ARCH_FEATURE_LEVEL=$cudaVersion" -D "CIBUILD=1"
+          cmake --build "./build_$cudaVersion_0" --target libbitsandbytes_cuda --config Release
+          if ($cudaVersion -eq '11.6') { cmake --build "./build_$cudaVersion_1" --target libbitsandbytes_cpu --config Release }
+        
+      - name: Compile Cuda Code nocublaslt
+        run: |
+          $env:CUDA_PATH = $env:CONDA_PREFIX
+          $cudaVersion = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.'))
+          $x = 'CUDA_PATH_V' + $cudaVersion.Replace('.','_')
+          [Environment]::SetEnvironmentVariable($x, $env:CUDA_PATH)
+          if (!(Test-Path '.\BuildArtifacts\')) { mkdir '.\BuildArtifacts' }
+          cmake -S . -B "./build_$cudaVersion_1" -G "Visual Studio 17 2022" -T "cuda=$cudaVersion" -D "NO_CUBLASLT=1" -D "CUDA_TARGET_ARCH_FEATURE_LEVEL=$cudaVersion" -D "CIBUILD=1"
+          cmake --build "./build_$cudaVersion_1" --target libbitsandbytes_cuda --config Release
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: compiled-binaries
+          path: ./BuildArtifacts/*
+
+  build_wheel:
+    name: Build Wheel
+    needs: compile_cuda_new
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'cmake_windows'
+        
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - uses: actions/download-artifact@v3
+        with:
+          name: compiled-binaries
+          path: ./bitsandbytes
+          
+      - name: Build Wheel
+        run: |
+          python -m pip install build wheel
+          python -m build -n --wheel
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheel
+          path: ./dist/*.whl

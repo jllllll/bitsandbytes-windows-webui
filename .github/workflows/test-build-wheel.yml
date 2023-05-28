@@ -4,14 +4,14 @@ on: workflow_dispatch
 
 jobs:
   compile_cuda_new:
-    # Uses Windows-2022 and Cuda Toolkit >= 11.4 with full version spec as string: "11.4.4"
+    # Uses Windows-2022 and Cuda Toolkit >= 11.6 with full version spec as string: "11.6.2"
     # Uses 11.6 as CPU build target, version must be included to build CPU target
     # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/windows-links.ts for supported versions
     name: Compile Cuda Code 2022
     runs-on: windows-2022
     strategy:
       matrix:
-        cuda: ["11.4.4"]
+        cuda: ["11.6.2"]
     defaults:
       run:
         shell: pwsh

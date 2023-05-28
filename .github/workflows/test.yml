@@ -1,0 +1,26 @@
+name: Test Workflow
+
+on: workflow_dispatch
+
+jobs:
+  compile_cuda:
+    name: Test Install Cuda 11.1.1
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Install Cuda Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.10
+        with:
+          cuda: '11.1.1'
+          method: 'network'
+          sub-packages: '["nvcc", "visual_studio_integration"]'
+          
+      - name: Check Directories
+        run: |
+          $x = (dir $env:CUDA_PATH -dir -recurse -depth ).where({$_.name -eq 'visual_studio_integration'}).fullname
+          echo $x
+          echo "\n\n"
+          dir $((dir $x -dir -recurse).where({$_.name -eq 'MSBuildExtensions'}).fullname)

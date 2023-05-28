@@ -1,17 +1,18 @@
-name: Build bitsandbytes Windows Wheel
+name: Build bitsandbytes Windows Wheel 0.37.2
 
 on: workflow_dispatch
 
 jobs:
   compile_cuda_new:
-    # Uses Windows-2022 and Cuda Toolkit >= 11.6 with full version spec as string: "11.6.2"
+    # This version of bitsandbytes only supports Cuda 11.x
+    # Uses Windows-2022 and Cuda Toolkit 11.6 - 11.8 with full version spec as string: "11.6.2"
     # Uses 11.6 as CPU build target, version must be included to build CPU binaries
     # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/windows-links.ts for supported versions
     name: Compile Cuda Code 2022
     runs-on: windows-2022
     strategy:
       matrix:
-        cuda: ["11.6.2", "11.7.1", "11.8.0", "12.0.1", "12.1.0"]
+        cuda: ["11.6.2", "11.7.1", "11.8.0"]
         cublas: ["0", "1"]
     defaults:
       run:
@@ -36,7 +37,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.37.2'
         
       - uses: actions/setup-python@v4
         with:
@@ -123,7 +124,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.37.2'
         
       - uses: actions/setup-python@v4
         with:
@@ -179,7 +180,7 @@ jobs:
 
   compile_cuda_old:
     # Uses Windows-2019 and Cuda Toolkit <= 11.2 with full version spec as string: "11.2.2"
-    # These versions of the Toolkit are not available through conda and must be installed through Jimver/cuda-toolkit (slow!)
+    # These versions of the Toolkit are not available through conda and must be installed through Jimver/cuda-toolkit (slower for newer versions, but these are fine)
     # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/windows-links.ts for supported versions
     name: Compile Cuda Code 2019
     runs-on: windows-2019
@@ -194,7 +195,7 @@ jobs:
       CUDAVER: ${{ matrix.cuda }}
 
     steps:
-      - name: Get Visual Studio Integration
+      - name: Install Cuda Toolkit
         uses: Jimver/cuda-toolkit@v0.2.10
         with:
           cuda: ${{ matrix.cuda }}
@@ -209,7 +210,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.37.2'
         
       - uses: actions/setup-python@v4
         with:
@@ -263,7 +264,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.37.2'
         
       - uses: actions/setup-python@v4
         with:

@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         cuda: ["11.6.2"]
+        cublas: ["0", "1"]
     defaults:
       run:
         shell: pwsh
@@ -63,6 +64,7 @@ jobs:
           mamba install -y 'cmake' 'ninja' 'cuda' $cudaChannels.Split()
         
       - name: Compile Cuda Code
+        if: matrix.cublas == '0'
         run: |
           $env:CUDA_PATH = $env:CONDA_PREFIX
           $cudaVersion = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.'))
@@ -71,9 +73,10 @@ jobs:
           if (!(Test-Path '.\BuildArtifacts\')) { mkdir '.\BuildArtifacts' }
           cmake -S . -B "./build_$cudaVersion_0" -G "Visual Studio 17 2022" -T "cuda=$cudaVersion" -D "NO_CUBLASLT=0" -D "CUDA_TARGET_ARCH_FEATURE_LEVEL=$cudaVersion" -D "CIBUILD=1"
           cmake --build "./build_$cudaVersion_0" --target libbitsandbytes_cuda --config Release
-          if ($cudaVersion -eq '11.6') { cmake --build "./build_$cudaVersion_1" --target libbitsandbytes_cpu --config Release }
+          if ($cudaVersion -eq '11.6') { cmake --build "./build_$cudaVersion_0" --target libbitsandbytes_cpu --config Release }
         
       - name: Compile Cuda Code nocublaslt
+        if: matrix.cublas == '1'
         run: |
           $env:CUDA_PATH = $env:CONDA_PREFIX
           $cudaVersion = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.'))

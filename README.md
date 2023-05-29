@@ -28,3 +28,5 @@ Credit to [Adrian Popescu](https://github.com/acpopescu) at: https://github.com/
 0.38.1 was compiled from here: https://github.com/jllllll/bitsandbytes/tree/cmake_windows_0.38.1
 
 0.39.0 was compiled from here: https://github.com/jllllll/bitsandbytes/tree/cmake_windows
+
+#### All wheels are compiled using GitHub Actions.

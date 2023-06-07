@@ -59,7 +59,7 @@ jobs:
           if ([int]$env:CUDA_VERSION -lt 118) { $buildTarget = 'cuda11x' } elseif ($env:CUDA_VERSION -eq '118') { $buildTarget = 'cuda118' } else { $buildTarget = 'cuda12x' }
           if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
           make $buildTarget
-          if ($cudaVersion -eq '116') { $env:CUDA_VERSION = 'CPU'; make cpuonly }
+          if ($env:CUDA_VERSION -eq '116') { $env:CUDA_VERSION = 'CPU'; make cpuonly }
         
       - name: Compile Cuda Code nocublaslt
         if: matrix.cublas == '1'

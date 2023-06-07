@@ -1,0 +1,178 @@
+name: Build bitsandbytes Linux Wheel Latest
+
+on: workflow_dispatch
+
+jobs:
+  compile_cuda_new:
+    # Uses Cuda Toolkit >= 11.3 with full version spec as string: "11.6.2"
+    # Uses 11.6 as CPU build target, version must be included to build CPU binaries
+    # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/linux-links.ts for supported versions
+    name: Compile Cuda Code 11.3+
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        cuda: ["11.3.1", "11.4.4", "11.5.2", "11.6.2", "11.7.1", "11.8.0", "12.0.1", "12.1.0"]
+        cublas: ["0", "1"]
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      CUDAVER: ${{ matrix.cuda }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'linux_0.39.0'
+        
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - name: Setup Mamba
+        uses: conda-incubator/setup-miniconda@v2.2.0
+        with:
+          activate-environment: "build"
+          python-version: "3.10"
+          mamba-version: "*"
+          use-mamba: true
+          channels: conda-forge,defaults
+          channel-priority: true
+          add-pip-as-python-dependency: true
+          auto-activate-base: false
+          
+      - name: Install Dependencies
+        run: |
+          $cudaVersion = $env:CUDAVER
+          $cudaChannels = ''
+          $cudaNum = [int]$cudaVersion.substring($cudaVersion.LastIndexOf('.')+1)
+          while ($cudaNum -ge 0) { $cudaChannels += '-c nvidia/label/cuda-' + $cudaVersion.Remove($cudaVersion.LastIndexOf('.')+1) + $cudaNum + ' '; $cudaNum-- }
+          $cudaChannels = $cudaChannels.TrimEnd() + ' -c conda-forge -c defaults'
+          mamba install -y 'make' 'cuda' $cudaChannels.Split()
+        
+      - name: Compile Cuda Code
+        if: matrix.cublas == '0'
+        run: |
+          $env:CUDA_HOME = $env:CONDA_PREFIX
+          $env:LD_LIBRARY_PATH = "$env:CUDA_HOME/lib" + ':' + $env:LD_LIBRARY_PATH
+          $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
+          if ([int]$env:CUDA_VERSION -lt 118) { $buildTarget = 'CC_CUDA11x' } elseif ($env:CUDA_VERSION -eq '118') { $buildTarget = 'CC_CUDA118' } else { $buildTarget = 'CC_CUDA12x' }
+          if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
+          make $buildTarget
+          if ($cudaVersion -eq '116') { $env:CUDA_VERSION = 'CPU'; make cpuonly }
+        
+      - name: Compile Cuda Code nocublaslt
+        if: matrix.cublas == '1'
+        run: |
+          $env:CUDA_HOME = $env:CONDA_PREFIX
+          $env:LD_LIBRARY_PATH = "$env:CUDA_HOME/lib" + ':' + $env:LD_LIBRARY_PATH
+          $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
+          if ([int]$env:CUDA_VERSION -lt 118) { $buildTarget = 'CC_CUDA11x_nomatmul' } elseif ($env:CUDA_VERSION -eq '118') { $buildTarget = 'CC_CUDA118_nomatmul' } else { $buildTarget = 'CC_CUDA12x_nomatmul' }
+          if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
+          make $buildTarget
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: compiled-binaries
+          path: ./BuildArtifacts/*
+
+  compile_cuda_old:
+    # Uses Cuda Toolkit <= 11.2 with full version spec as string: "11.2.2"
+    # These versions of the Toolkit are not available through conda and must be installed through Jimver/cuda-toolkit (slower for newer versions, but these are fine)
+    # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/linux-links.ts for supported versions
+    name: Compile Cuda Code 11.1 11.2
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        cuda: ["11.1.1", "11.2.2"]
+        cublas: ["0", "1"]
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      CUDAVER: ${{ matrix.cuda }}
+
+    steps:
+      - name: Install Cuda Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.10
+        with:
+          cuda: ${{ matrix.cuda }}
+          method: 'local'
+          
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'linux_0.39.0'
+        
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - name: Setup Mamba
+        uses: conda-incubator/setup-miniconda@v2.2.0
+        with:
+          activate-environment: "build"
+          python-version: "3.10"
+          mamba-version: "*"
+          use-mamba: true
+          channels: conda-forge,defaults
+          channel-priority: true
+          add-pip-as-python-dependency: true
+          auto-activate-base: false
+          
+      - name: Install Dependencies
+        run: mamba install -y 'make' -c 'conda-forge' -c 'defaults'
+        
+      - name: Compile Cuda Code
+        if: matrix.cublas == '0'
+        run: |
+          $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
+          $buildTarget = 'CC_CUDA11x'
+          if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
+          make $buildTarget
+        
+      - name: Compile Cuda Code nocublaslt
+        if: matrix.cublas == '1'
+        run: |
+          $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
+          $buildTarget = 'CC_CUDA11x_nomatmul'
+          if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
+          make $buildTarget
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: compiled-binaries
+          path: ./BuildArtifacts/*
+
+  build_wheel:
+    name: Build Wheel
+    needs: [compile_cuda_new, compile_cuda_old]
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'linux_0.39.0'
+        
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - uses: actions/download-artifact@v3
+        with:
+          name: compiled-binaries
+          path: ./bitsandbytes
+          
+      - name: Build Wheel
+        run: |
+          python -m pip install build wheel
+          python -m build -n --wheel -C--global-option=--plat-name=linux_x86_64
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheel
+          path: ./dist/*.whl

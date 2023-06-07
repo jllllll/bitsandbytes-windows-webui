@@ -7,7 +7,7 @@ jobs:
     # Uses Cuda Toolkit >= 11.3 with full version spec as string: "11.6.2"
     # Uses 11.6 as CPU build target, version must be included to build CPU binaries
     # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/linux-links.ts for supported versions
-    name: Compile Cuda Code 11.3+
+    name: Compile Cuda Code ${{ matrix.cuda }} ${{ matrix.cublas }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -56,7 +56,7 @@ jobs:
           $env:CUDA_HOME = $env:CONDA_PREFIX
           $env:LD_LIBRARY_PATH = "$env:CUDA_HOME/lib" + ':' + $env:LD_LIBRARY_PATH
           $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
-          if ([int]$env:CUDA_VERSION -lt 118) { $buildTarget = 'CC_CUDA11x' } elseif ($env:CUDA_VERSION -eq '118') { $buildTarget = 'CC_CUDA118' } else { $buildTarget = 'CC_CUDA12x' }
+          if ([int]$env:CUDA_VERSION -lt 118) { $buildTarget = 'cuda11x' } elseif ($env:CUDA_VERSION -eq '118') { $buildTarget = 'cuda118' } else { $buildTarget = 'cuda12x' }
           if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
           make $buildTarget
           if ($cudaVersion -eq '116') { $env:CUDA_VERSION = 'CPU'; make cpuonly }
@@ -67,7 +67,7 @@ jobs:
           $env:CUDA_HOME = $env:CONDA_PREFIX
           $env:LD_LIBRARY_PATH = "$env:CUDA_HOME/lib" + ':' + $env:LD_LIBRARY_PATH
           $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
-          if ([int]$env:CUDA_VERSION -lt 118) { $buildTarget = 'CC_CUDA11x_nomatmul' } elseif ($env:CUDA_VERSION -eq '118') { $buildTarget = 'CC_CUDA118_nomatmul' } else { $buildTarget = 'CC_CUDA12x_nomatmul' }
+          if ([int]$env:CUDA_VERSION -lt 118) { $buildTarget = 'cuda11x_nomatmul' } elseif ($env:CUDA_VERSION -eq '118') { $buildTarget = 'cuda118_nomatmul' } else { $buildTarget = 'cuda12x_nomatmul' }
           if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
           make $buildTarget
         
@@ -80,7 +80,7 @@ jobs:
     # Uses Cuda Toolkit <= 11.2 with full version spec as string: "11.2.2"
     # These versions of the Toolkit are not available through conda and must be installed through Jimver/cuda-toolkit (slower for newer versions, but these are fine)
     # See https://github.com/Jimver/cuda-toolkit/blob/master/src/links/linux-links.ts for supported versions
-    name: Compile Cuda Code 11.1 11.2
+    name: Compile Cuda Code ${{ matrix.cuda }} ${{ matrix.cublas }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -127,7 +127,7 @@ jobs:
         if: matrix.cublas == '0'
         run: |
           $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
-          $buildTarget = 'CC_CUDA11x'
+          $buildTarget = 'cuda11x'
           if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
           make $buildTarget
         
@@ -135,7 +135,7 @@ jobs:
         if: matrix.cublas == '1'
         run: |
           $env:CUDA_VERSION = $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','')
-          $buildTarget = 'CC_CUDA11x_nomatmul'
+          $buildTarget = 'cuda11x_nomatmul'
           if (!(Test-Path './BuildArtifacts/')) { mkdir './BuildArtifacts' }
           make $buildTarget
         

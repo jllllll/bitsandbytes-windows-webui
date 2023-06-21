@@ -1,4 +1,4 @@
-name: Build bitsandbytes Windows Wheel Latest
+name: Build bitsandbytes Windows Wheel 0.39.0
 
 on: workflow_dispatch
 
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.39.0'
         
       - uses: actions/setup-python@v4
         with:
@@ -123,7 +123,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.39.0'
         
       - uses: actions/setup-python@v4
         with:
@@ -209,7 +209,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.39.0'
         
       - uses: actions/setup-python@v4
         with:
@@ -263,7 +263,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows'
+          ref: 'cmake_windows_0.39.0'
         
       - uses: actions/setup-python@v4
         with:

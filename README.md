@@ -1,7 +1,8 @@
 # bitsandbytes-windows-webui
 
 ## Wheels will be published in the releases section going forward --->
-This is due to git file size limits restricting what can be uploaded in the main repo.
+This is due to git file size limits restricting what can be uploaded in the main repo.  
+The wheels seen in the repo above are outdated and only kept to not break current setups.
 
 ----
 Windows compile of bitsandbytes for use in text-generation-webui.  

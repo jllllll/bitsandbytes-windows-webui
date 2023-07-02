@@ -6,7 +6,8 @@ This is due to git file size limits restricting what can be uploaded in the main
 ----
 Windows compile of bitsandbytes for use in text-generation-webui.  
 Compiled for CUDA 11.1-11.8.  
-0.38.1+ additionally includes support for 12.0 and 12.1.
+0.38.1+ additionally includes support for 12.0 and 12.1.  
+0.39.1+ additionally includes support for 12.2.
 
 ***0.39.0 does not support cards with compute less than 7.0.***
 

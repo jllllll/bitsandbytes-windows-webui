@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Get Visual Studio Integration
-        if: matrix.cuda != "12.2.0"
+        if: matrix.cuda != '12.2.0'
         uses: Jimver/cuda-toolkit@v0.2.10
         with:
           cuda: ${{ matrix.cuda }}
@@ -29,7 +29,7 @@ jobs:
           sub-packages: '["visual_studio_integration"]'
           
       - name: Get Visual Studio Integration 12.2
-        if: matrix.cuda == "12.2.0"
+        if: matrix.cuda == '12.2.0'
         run: |
           Invoke-RestMethod 'https://developer.download.nvidia.com/compute/cuda/12.2.0/network_installers/cuda_12.2.0_windows_network.exe' -OutFile "$env:RUNNER_TEMP\cudainstaller.exe"
           Start-Process "$env:RUNNER_TEMP\cudainstaller.exe" -wait -ArgumentList '-s visual_studio_integration_12.2'

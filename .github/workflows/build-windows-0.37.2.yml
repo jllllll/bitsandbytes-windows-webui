@@ -2,6 +2,9 @@ name: Build bitsandbytes Windows Wheel 0.37.2
 
 on: workflow_dispatch
 
+permissions:
+  contents: write
+
 jobs:
   compile_cuda_new:
     # This version of bitsandbytes only supports Cuda 11.x

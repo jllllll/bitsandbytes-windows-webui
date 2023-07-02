@@ -2,6 +2,9 @@ name: Build bitsandbytes Linux Wheel Latest
 
 on: workflow_dispatch
 
+permissions:
+  contents: write
+
 jobs:
   compile_cuda_new:
     # Uses Cuda Toolkit >= 11.3 with full version spec as string: "11.6.2"

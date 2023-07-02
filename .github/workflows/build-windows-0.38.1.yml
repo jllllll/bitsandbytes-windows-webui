@@ -2,6 +2,9 @@ name: Build bitsandbytes Windows Wheel 0.38.1
 
 on: workflow_dispatch
 
+permissions:
+  contents: write
+
 jobs:
   compile_cuda_new:
     # Uses Windows-2022 and Cuda Toolkit >= 11.6 with full version spec as string: "11.6.2"

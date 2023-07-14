@@ -2,7 +2,7 @@
 
 ## Wheels will be published in the releases section going forward --->
 This is due to git file size limits restricting what can be uploaded in the main repo.  
-The wheels seen in the repo above are outdated and only kept to not break current setups.
+The wheels seen in the repo above may be outdated and are only kept to not break current setups.
 
 ----
 Windows compile of bitsandbytes for use in text-generation-webui.  

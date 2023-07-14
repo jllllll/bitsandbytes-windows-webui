@@ -1,6 +1,8 @@
 name: Build bitsandbytes Windows Wheel 0.39.0 for Repository
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  workflow_call:
 
 jobs:
   compile_cuda_new:

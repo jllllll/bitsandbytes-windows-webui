@@ -32,7 +32,11 @@ python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/rele
 ```
 0.40.0:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.40.0-py3-none-win_amd64.whl
+python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.40.0.post4-py3-none-win_amd64.whl
+```
+0.40.1:
+```
+python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.40.1.post1-py3-none-win_amd64.whl
 ```
 
 Credit to [Adrian Popescu](https://github.com/acpopescu) for the conversion to Windows at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows

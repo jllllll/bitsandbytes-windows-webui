@@ -13,31 +13,35 @@ Compiled for CUDA 11.1-11.8.
 ***0.39.0 does not support cards with compute less than 7.0.***  
 Newer versions do.
 
-Can be installed with the following command:
+The latest version can be installed with the following command:
+```
+python -m pip install bitsandbytes --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+```
+Specific versions can be installed with:
 
 0.37.2:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.37.2-py3-none-win_amd64.whl --force-reinstall
+python -m pip install bitsandbytes==0.37.2 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
 0.38.1:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.38.1-py3-none-win_amd64.whl --force-reinstall
+python -m pip install bitsandbytes==0.38.1 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
 0.39.0:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.39.0-py3-none-win_amd64.whl
+python -m pip install bitsandbytes==0.39.0 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
 0.39.1:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.39.1-py3-none-win_amd64.whl
+python -m pip install bitsandbytes==0.39.1 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
 0.40.0:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.40.0.post4-py3-none-win_amd64.whl
+python -m pip install bitsandbytes==0.40.0.* --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
 0.40.1:
 ```
-python -m pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.40.1.post1-py3-none-win_amd64.whl
+python -m pip install bitsandbytes==0.40.1.* --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
 
 Credit to [Adrian Popescu](https://github.com/acpopescu) for the conversion to Windows at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows

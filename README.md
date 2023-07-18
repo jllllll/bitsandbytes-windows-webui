@@ -43,6 +43,10 @@ python -m pip install bitsandbytes==0.40.0.* --prefer-binary --extra-index-url=h
 ```
 python -m pip install bitsandbytes==0.40.1.* --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
+0.40.2:
+```
+python -m pip install bitsandbytes==0.40.2 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+```
 
 Credit to [Adrian Popescu](https://github.com/acpopescu) for the conversion to Windows at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows
 

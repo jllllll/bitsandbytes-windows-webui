@@ -10,8 +10,8 @@ Compiled for CUDA 11.1-11.8.
 0.38.1+ additionally includes support for 12.0 and 12.1.  
 0.39.1+ additionally includes support for 12.2.
 
-***0.39.0 does not support cards with compute less than 7.0.***  
-Newer versions do.
+***0.35.X and 0.39.0 does not support cards with compute less than 7.0.***  
+Other versions do.
 
 The latest version can be installed with the following command:
 ```
@@ -19,6 +19,14 @@ python -m pip install bitsandbytes --prefer-binary --extra-index-url=https://jll
 ```
 Specific versions can be installed with:
 
+0.35.0:
+```
+python -m pip install bitsandbytes==0.35.0 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+```
+0.35.4:
+```
+python -m pip install bitsandbytes==0.35.4 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+```
 0.37.2:
 ```
 python -m pip install bitsandbytes==0.37.2 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui

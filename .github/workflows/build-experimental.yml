@@ -1,0 +1,81 @@
+name: Build bitsandbytes experimental
+
+on: workflow_dispatch
+
+jobs:
+  compile_hip:
+    name: Compile HIP Code
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@v1.2.0
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          swap-storage: false
+          
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'rocm_0.40.2'
+    
+      - name: Install ROCm SDK
+        run: |
+          [ ! -d /etc/apt/keyrings ] && sudo mkdir --parents --mode=0755 /etc/apt/keyrings
+          wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/keyrings/rocm.gpg > /dev/null
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/5.4.2 focal main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
+          echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo tee /etc/apt/preferences.d/rocm-pin-600
+          sudo apt update
+          sudo apt install rocm-dev rocsparse-dev rocprim-dev rocthrust-dev rocblas-dev hipblas-dev hipcub-dev hipsparse-dev -y
+          echo "/opt/rocm/bin" >> $GITHUB_PATH
+          echo "ROCM_PATH=/opt/rocm" >> $GITHUB_ENV
+          echo "ROCM_VERSION=5.4.2" >> $GITHUB_ENV
+          
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'rocm_0.40.2'
+        
+      - name: Compile HIP Code
+        run: |
+          [ ! -d ./BuildArtifacts ] && mkdir ./BuildArtifacts
+          make hip
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: compiled-binaries
+          path: ./BuildArtifacts/*
+
+  build_wheel:
+    name: Build Wheel
+    needs: [compile_hip]
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'jllllll/bitsandbytes'
+          ref: 'rocm_0.40.2'
+        
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          
+      - uses: actions/download-artifact@v3
+        with:
+          name: compiled-binaries
+          path: ./bitsandbytes
+          
+      - name: Build Wheel
+        run: |
+          python -m pip install build wheel
+          python -m build -n --wheel -C--global-option=--plat-name=linux_x86_64
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheel
+          path: ./dist/*.whl

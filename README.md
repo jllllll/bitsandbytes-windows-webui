@@ -13,6 +13,8 @@ Compiled for CUDA 11.1-11.8.
 ***0.35.X and 0.39.0 does not support cards with compute less than 7.0.***  
 Other versions do.
 
+Credit to [Adrian Popescu](https://github.com/acpopescu) for the initial conversion to Windows at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows
+
 The latest version can be installed with the following command:
 ```
 python -m pip install bitsandbytes --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
@@ -55,7 +57,10 @@ python -m pip install bitsandbytes==0.40.1.* --prefer-binary --extra-index-url=h
 ```
 python -m pip install bitsandbytes==0.40.2 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
+0.41.0:
+```
+python -m pip install bitsandbytes==0.41.0 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+```
 
-Credit to [Adrian Popescu](https://github.com/acpopescu) for the conversion to Windows at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows
 
 #### All wheels are compiled using GitHub Actions.

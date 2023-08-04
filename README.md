@@ -15,52 +15,26 @@ Other versions do.
 
 Credit to [Adrian Popescu](https://github.com/acpopescu) for the initial conversion to Windows at: https://github.com/acpopescu/bitsandbytes/tree/cmake_windows
 
-The latest version can be installed with the following command:
+The latest version available from here can be installed with the following command:
 ```
 python -m pip install bitsandbytes --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
-Specific versions can be installed with:
+You may need to change the command if the latest version is not yet available in this repo:
+```
+python -m pip install scipy
+python -m pip install bitsandbytes --index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+```
 
-0.35.0:
+You can install a specific version with:
 ```
-python -m pip install bitsandbytes==0.35.0 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+python -m pip install bitsandbytes==<version> --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
-0.35.4:
+List of available versions:
 ```
-python -m pip install bitsandbytes==0.35.4 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
+python -m pip index versions bitsandbytes --index-url=https://jllllll.github.io/bitsandbytes-windows-webui
 ```
-0.37.2:
-```
-python -m pip install bitsandbytes==0.37.2 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
-0.38.1:
-```
-python -m pip install bitsandbytes==0.38.1 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
-0.39.0:
-```
-python -m pip install bitsandbytes==0.39.0 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
-0.39.1:
-```
-python -m pip install bitsandbytes==0.39.1 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
-0.40.0:
-```
-python -m pip install bitsandbytes==0.40.0.* --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
-0.40.1:
-```
-python -m pip install bitsandbytes==0.40.1.* --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
-0.40.2:
-```
-python -m pip install bitsandbytes==0.40.2 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
-0.41.0:
-```
-python -m pip install bitsandbytes==0.41.0 --prefer-binary --extra-index-url=https://jllllll.github.io/bitsandbytes-windows-webui
-```
+
+Wheels can be manually downloaded from: https://github.com/jllllll/bitsandbytes-windows-webui/releases/tag/wheels
 
 
 #### All wheels are compiled using GitHub Actions.

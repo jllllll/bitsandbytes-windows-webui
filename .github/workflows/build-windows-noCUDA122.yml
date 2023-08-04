@@ -1,6 +1,20 @@
-name: Build bitsandbytes Windows Wheel 0.40.1
+name: Build bitsandbytes Windows Wheel Without CUDA 12.2
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build.'
+        default: '0.39.0'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to build.'
+        default: '0.39.0'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -14,7 +28,7 @@ jobs:
     runs-on: windows-2022
     strategy:
       matrix:
-        cuda: ["11.6.2", "11.7.1", "11.8.0", "12.0.1", "12.1.0", "12.2.0"]
+        cuda: ["11.6.2", "11.7.1", "11.8.0", "12.0.1", "12.1.0"]
         cublas: ["0", "1"]
     defaults:
       run:
@@ -24,19 +38,11 @@ jobs:
 
     steps:
       - name: Get Visual Studio Integration
-        if: matrix.cuda != '12.2.0'
         uses: Jimver/cuda-toolkit@v0.2.10
         with:
           cuda: ${{ matrix.cuda }}
           method: 'network'
           sub-packages: '["visual_studio_integration"]'
-          
-      - name: Get Visual Studio Integration 12.2
-        if: matrix.cuda == '12.2.0'
-        run: |
-          Invoke-RestMethod 'https://developer.download.nvidia.com/compute/cuda/12.2.0/network_installers/cuda_12.2.0_windows_network.exe' -OutFile "$env:RUNNER_TEMP\cudainstaller.exe"
-          Start-Process "$env:RUNNER_TEMP\cudainstaller.exe" -wait -ArgumentList '-s visual_studio_integration_12.2'
-          echo 'CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2' >> $env:GITHUB_ENV
           
       - name: Install Visual Studio Integration
         run: |
@@ -47,7 +53,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows_0.40.1'
+          ref: ${{ inputs.version == 'latest' && 'cmake_windows' || format('cmake_windows_{0}', inputs.version) }}
         
       - uses: actions/setup-python@v4
         with:
@@ -133,7 +139,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows_0.40.1'
+          ref: ${{ inputs.version == 'latest' && 'cmake_windows' || format('cmake_windows_{0}', inputs.version) }}
         
       - uses: actions/setup-python@v4
         with:
@@ -218,7 +224,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows_0.40.1'
+          ref: ${{ inputs.version == 'latest' && 'cmake_windows' || format('cmake_windows_{0}', inputs.version) }}
         
       - uses: actions/setup-python@v4
         with:
@@ -271,7 +277,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: 'jllllll/bitsandbytes'
-          ref: 'cmake_windows_0.40.1'
+          ref: ${{ inputs.version == 'latest' && 'cmake_windows' || format('cmake_windows_{0}', inputs.version) }}
         
       - uses: actions/setup-python@v4
         with:

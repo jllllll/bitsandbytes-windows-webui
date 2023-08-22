@@ -104,7 +104,7 @@ jobs:
         
       - uses: actions/upload-artifact@v3
         with:
-          name: compiled-binaries
+          name: compiled-binaries-nocuda12
           path: ./BuildArtifacts/*
 
   compile_cuda_old_conda:
@@ -189,7 +189,7 @@ jobs:
         
       - uses: actions/upload-artifact@v3
         with:
-          name: compiled-binaries
+          name: compiled-binaries-nocuda12
           path: ./BuildArtifacts/*
 
   compile_cuda_old:
@@ -262,7 +262,7 @@ jobs:
         
       - uses: actions/upload-artifact@v3
         with:
-          name: compiled-binaries
+          name: compiled-binaries-nocuda12
           path: ./BuildArtifacts/*
 
   build_wheel:
@@ -285,7 +285,7 @@ jobs:
           
       - uses: actions/download-artifact@v3
         with:
-          name: compiled-binaries
+          name: compiled-binaries-nocuda12
           path: ./bitsandbytes
           
       - name: Build Wheel

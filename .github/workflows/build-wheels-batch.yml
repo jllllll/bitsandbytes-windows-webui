@@ -5,7 +5,7 @@ on:
     inputs:
       versions:
         description: 'Comma-seperated versions of bitsandbytes to build'
-        default: 'latest,0.41.1,0.41.0,0.40.2,0.38.1,0.39.0,0.39.1,0.40.0,0.40.1'
+        default: 'latest,0.41.0,0.40.2,0.38.1,0.39.0,0.39.1,0.40.0,0.40.1'
         required: true
         type: string
 
@@ -54,7 +54,7 @@ jobs:
           
   run_cuda122:
     name: Build ${{ matrix.version }} Wheels
-    if: ${{ always() && needs.define_matrix.result == 'success' && needs.run_main.result != 'failure' && fromJSON(needs.define_matrix.outputs.matrixnocuda122)[0] != 'none'}}
+    if: ${{ always() && !cancelled() && needs.define_matrix.result == 'success' && needs.run_main.result != 'failure' && fromJSON(needs.define_matrix.outputs.matrixnocuda122)[0] != 'none'}}
     needs: ['define_matrix','run_main']
     strategy:
       max-parallel: 1
@@ -66,7 +66,7 @@ jobs:
           
   run_nocuda12:
     name: Build ${{ matrix.version }} Wheels
-    if: ${{ always() && needs.define_matrix.result == 'success' && needs.run_cuda122.result != 'failure' && fromJSON(needs.define_matrix.outputs.matrixnocuda12)[0] != 'none'}}
+    if: ${{ always() && !cancelled() && needs.define_matrix.result == 'success' && needs.run_cuda122.result != 'failure' && fromJSON(needs.define_matrix.outputs.matrixnocuda12)[0] != 'none'}}
     needs: ['define_matrix','run_cuda122']
     strategy:
       max-parallel: 1

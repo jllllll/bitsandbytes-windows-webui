@@ -112,7 +112,7 @@ jobs:
         
       - uses: actions/upload-artifact@v3
         with:
-          name: compiled-binaries
+          name: ${{ format('compiled-binaries-{0}', inputs.version) }}
           path: ./BuildArtifacts/*
 
   compile_cuda_old_conda:
@@ -197,7 +197,7 @@ jobs:
         
       - uses: actions/upload-artifact@v3
         with:
-          name: compiled-binaries
+          name: ${{ format('compiled-binaries-{0}', inputs.version) }}
           path: ./BuildArtifacts/*
 
   compile_cuda_old:
@@ -270,7 +270,7 @@ jobs:
         
       - uses: actions/upload-artifact@v3
         with:
-          name: compiled-binaries
+          name: ${{ format('compiled-binaries-{0}', inputs.version) }}
           path: ./BuildArtifacts/*
 
   build_wheel:
@@ -293,7 +293,7 @@ jobs:
           
       - uses: actions/download-artifact@v3
         with:
-          name: compiled-binaries
+          name: ${{ format('compiled-binaries-{0}', inputs.version) }}
           path: ./bitsandbytes
           
       - name: Build Wheel
@@ -303,7 +303,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: wheel
+          name: wheels
           path: ./dist/*.whl
           
       - name: Upload files to a GitHub release

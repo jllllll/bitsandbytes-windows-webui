@@ -1,0 +1,77 @@
+name: Batch Build Wheels
+
+on:
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: 'Comma-seperated versions of bitsandbytes to build'
+        default: 'latest,0.41.1,0.41.0,0.40.2,0.38.1,0.39.0,0.39.1,0.40.0,0.40.1'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  
+jobs:
+  define_matrix:
+    name: Define Workflow Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrixnocuda122: ${{ steps.set-matrix.outputs.matrixnocuda122 }}
+      matrixnocuda12: ${{ steps.set-matrix.outputs.matrixnocuda12 }}
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PCKGVERS: ${{ inputs.versions }}
+        
+    steps:
+      - name: Define Job Output
+        id: set-matrix
+        run: |
+          $matrix = $env:PCKGVERS.Split(',').Trim().where({$_ -notin ('0.38.1','0.39.0','0.37.2','0.35.4','0.35.0')})
+          $matrixnocuda122 = $env:PCKGVERS.Split(',').Trim().where({$_ -in ('0.38.1','0.39.0')})
+          $matrixnocuda12 = $env:PCKGVERS.Split(',').Trim().where({$_ -in ('0.37.2','0.35.4','0.35.0')})
+          $x = if ($matrix.count -eq 0) {ConvertTo-Json @('none') -Compress} else {ConvertTo-Json $matrix -Compress}
+          $y = if ($matrixnocuda122.count -eq 0) {ConvertTo-Json @('none') -Compress} else {ConvertTo-Json $matrixnocuda122 -Compress}
+          $z = if ($matrixnocuda12.count -eq 0) {ConvertTo-Json @('none') -Compress} else {ConvertTo-Json $matrixnocuda12 -Compress}
+          Write-Output ('matrix=' + $x) >> $env:GITHUB_OUTPUT
+          Write-Output ('matrixnocuda122=' + $y) >> $env:GITHUB_OUTPUT
+          Write-Output ('matrixnocuda12=' + $z) >> $env:GITHUB_OUTPUT
+          
+  run_main:
+    name: Build ${{ matrix.version }} Wheels
+    if: ${{ needs.define_matrix.result == 'success' && fromJSON(needs.define_matrix.outputs.matrix)[0] != 'none'}}
+    needs: define_matrix
+    strategy:
+      max-parallel: 1
+      matrix:
+        version: ${{ fromJSON(needs.define_matrix.outputs.matrix) }}
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      version: ${{ matrix.version }}
+          
+  run_cuda122:
+    name: Build ${{ matrix.version }} Wheels
+    if: ${{ always() && needs.define_matrix.result == 'success' && needs.run_main.result != 'failure' && fromJSON(needs.define_matrix.outputs.matrixnocuda122)[0] != 'none'}}
+    needs: ['define_matrix','run_main']
+    strategy:
+      max-parallel: 1
+      matrix:
+        version: ${{ fromJSON(needs.define_matrix.outputs.matrixnocuda122) }}
+    uses: ./.github/workflows/build-windows-noCUDA122.yml
+    with:
+      version: ${{ matrix.version }}
+          
+  run_nocuda12:
+    name: Build ${{ matrix.version }} Wheels
+    if: ${{ always() && needs.define_matrix.result == 'success' && needs.run_cuda122.result != 'failure' && fromJSON(needs.define_matrix.outputs.matrixnocuda12)[0] != 'none'}}
+    needs: ['define_matrix','run_cuda122']
+    strategy:
+      max-parallel: 1
+      matrix:
+        version: ${{ fromJSON(needs.define_matrix.outputs.matrixnocuda12) }}
+    uses: ./.github/workflows/build-windows-noCUDA12.yml
+    with:
+      version: ${{ matrix.version }}

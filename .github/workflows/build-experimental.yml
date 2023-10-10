@@ -1,14 +1,73 @@
 name: Build bitsandbytes experimental
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: 'Override configurations to build: key1:item1-1,item1-2;key2:item2-1,item2-2'
+        default: 'Default'
+        required: false
+        type: string
+      exclude:
+        description: 'Exclude build configurations: key1-1:item1-1,key1-2:item1-2;key2-1:item2-1,key2-2:item2-2'
+        default: 'Default'
+        required: false
+        type: string
 
 jobs:
-  compile_hip:
-    name: Compile HIP Code
-    runs-on: ubuntu-20.04
+  define_matrix:
+    name: Define Build Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      CONFIGIN: ${{ inputs.config }}
+      EXCLUDEIN: ${{ inputs.exclude }}
+        
+    steps:
+      - name: Define Job Output
+        id: set-matrix
+        run: |
+          $matrix = @{
+              'os' = 'ubuntu-20.04', 'windows-latest'
+              'pyver' = "3.10", "3.8", "3.9", "3.11"
+              'rocm' = '5.5', '5.5.1', '5.6.1'
+              'exclude' = @(
+                  @{'os' = 'windows-latest';'rocm' = '5.5'},
+                  @{'os' = 'windows-latest';'rocm' = '5.6.1'},
+                  @{'os' = 'ubuntu-20.04';'rocm' = '5.5.1'}
+              )
+          }
+          
+          if ($env:CONFIGIN -ne 'Default') {$env:CONFIGIN.split(';').foreach({$matrix[$_.split(':')[0]] = $_.split(':')[1].split(',')})}
+          
+          if ($env:EXCLUDEIN -notin ('None','Default')) {
+              $exclusions = $matrix['exclude']
+              $exclusions += $env:EXCLUDEIN.split(';').replace(':','=').replace(',',"`n") | ConvertFrom-StringData
+              $matrix['exclude'] = $exclusions
+          } elseif ($env:EXCLUDEIN -eq 'None') {$matrix.remove('exclude')}
+          
+          $matrixOut = ConvertTo-Json $matrix -Compress
+          Write-Output ('matrix=' + $matrixOut) >> $env:GITHUB_OUTPUT
+          
+  build_wheels:
+    name: Build ${{ matrix.os }} Python ${{ matrix.pyver }} ROCm ${{ matrix.rocm }} Wheel
+    needs: define_matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix: ${{ fromJSON(needs.define_matrix.outputs.matrix) }}
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      ROCM_VERSION: ${{ matrix.rocm }}
 
     steps:
       - name: Free Disk Space
+        if: runner.os == 'Linux'
         uses: jlumbroso/free-disk-space@v1.2.0
         with:
           tool-cache: false
@@ -18,64 +77,95 @@ jobs:
           large-packages: false
           swap-storage: false
           
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          repository: 'jllllll/bitsandbytes'
-          ref: 'rocm_0.40.2'
-    
-      - name: Install ROCm SDK
+          repository: 'arlo-phoenix/bitsandbytes-rocm-5.6'
+          ref: 'e38b9e91b718e8b84f4678c423f72dd4decce4e5'
+          
+      - name: Install Linux ROCm SDK
+        if: runner.os == 'Linux'
+        shell: bash
         run: |
           [ ! -d /etc/apt/keyrings ] && sudo mkdir --parents --mode=0755 /etc/apt/keyrings
           wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor | sudo tee /etc/apt/keyrings/rocm.gpg > /dev/null
-          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/5.4.2 focal main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
+          echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/rocm/apt/$ROCM_VERSION focal main" | sudo tee --append /etc/apt/sources.list.d/rocm.list
           echo -e 'Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600' | sudo tee /etc/apt/preferences.d/rocm-pin-600
           sudo apt update
-          sudo apt install rocm-dev rocsparse-dev rocprim-dev rocthrust-dev rocblas-dev hipblas-dev hipcub-dev hipsparse-dev -y
-          echo "/opt/rocm/bin" >> $GITHUB_PATH
-          echo "ROCM_PATH=/opt/rocm" >> $GITHUB_ENV
-          echo "ROCM_VERSION=5.4.2" >> $GITHUB_ENV
+          sudo apt install rocm-hip-sdk hipblaslt-dev -y
           
-      - uses: actions/checkout@v3
-        with:
-          repository: 'jllllll/bitsandbytes'
-          ref: 'rocm_0.40.2'
-        
-      - name: Compile HIP Code
+      - name: Install Windows ROCm SDK
+        if: runner.os == 'Windows'
         run: |
-          [ ! -d ./BuildArtifacts ] && mkdir ./BuildArtifacts
-          make hip
-        
-      - uses: actions/upload-artifact@v3
-        with:
-          name: compiled-binaries
-          path: ./BuildArtifacts/*
-
-  build_wheel:
-    name: Build Wheel
-    needs: [compile_hip]
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: 'jllllll/bitsandbytes'
-          ref: 'rocm_0.40.2'
-        
+          curl -LO https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-23.Q3-Win10-Win11-For-HIP.exe
+          Start-Process 'AMD-Software-PRO-Edition-23.Q3-Win10-Win11-For-HIP.exe' -ArgumentList '-install' -NoNewWindow -Wait
+          echo "C:\PROGRA~1\AMD\ROCm\5.5\bin" >> $env:GITHUB_PATH
+          echo 'ROCM_PATH=C:\PROGRA~1\AMD\ROCm\5.5' >> $env:GITHUB_ENV
+          echo 'ROCM_HOME=C:\PROGRA~1\AMD\ROCm\5.5' >> $env:GITHUB_ENV
+          echo 'HIP_PATH=C:\PROGRA~1\AMD\ROCm\5.5' >> $env:GITHUB_ENV
+          echo 'HIP_HOME=C:\PROGRA~1\AMD\ROCm\5.5' >> $env:GITHUB_ENV
+          
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
-          
-      - uses: actions/download-artifact@v3
+          python-version: ${{ matrix.pyver }}
+        
+      - name: Setup Mamba
+        uses: conda-incubator/setup-miniconda@v2.2.0
         with:
-          name: compiled-binaries
-          path: ./bitsandbytes
+          activate-environment: "build"
+          python-version: ${{ matrix.pyver }}
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          use-mamba: true
+          add-pip-as-python-dependency: true
+          auto-activate-base: false
           
+      - name: Install Dependencies
+        run: |
+          if ($IsWindows) {mamba install -y -c conda-forge m2w64-gcc}
+          python -m pip install build wheel
+        
       - name: Build Wheel
         run: |
-          python -m pip install build wheel
-          python -m build -n --wheel -C--global-option=--plat-name=linux_x86_64
-
+          if ($IsLinux) {
+            $env:ROCM_PATH = "/opt/rocm"
+            $env:ROCM_HOME = "/opt/rocm"
+            $env:HIP_PATH = "/opt/rocm"
+            $env:HIP_HOME = "/opt/rocm"
+          }
+          
+          $HIPCC = Join-Path $env:ROCM_PATH 'bin' 'hipcc'
+          $GPP = 'g++'
+          
+          $ROOT_DIR = (Resolve-Path '.').Path
+          $CSRC = Join-Path '.' 'csrc' -resolve
+          $BUILD_DIR = (New-Item 'build' -ItemType 'Directory').fullname
+          
+          $FILES_CPP = "$CSRC/common.cpp $CSRC/cpu_ops.cpp $CSRC/pythonInterface.c".split(' ')
+          
+          $HIP_INCLUDE = "-I $(Join-Path $env:ROCM_PATH 'include') -I $CSRC -I $(Join-Path $ROOT_DIR 'include')".split(' ')
+          $HIP_LIB = "-L $(Join-Path $env:ROCM_PATH 'lib') -lhipblas -lhiprand -lhipsparse".split(' ')
+          
+          $gputargets = 'gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack+;gfx90a:xnack-;gfx1010;gfx1012;gfx1030;gfx1100;gfx1101;gfx1102'
+          if ([version]$env:ROCM_VERSION -lt [version]'5.5') {$gputargets = 'gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack+;gfx90a:xnack-;gfx1010;gfx1012;gfx1030'}
+          
+          $ROCM_TARGETS = $gputargets.split(';').foreach({"--offload-arch=$_"})
+          
+          $OUT_LIB = if ($IsLinux) {"./bitsandbytes/libbitsandbytes_hip_nohipblaslt.so"} else {".\bitsandbytes\libbitsandbytes_hip_nohipblaslt.dll"}
+          
+          $OPS_O = Join-Path $CSRC 'ops.o'
+          $OPS_CU = Join-Path $CSRC 'ops.cu'
+          $KERNELS_O = Join-Path $CSRC 'kernels.o'
+          $KERNELS_CU = Join-Path $CSRC 'kernels.cu'
+          
+          . $HIPCC -std=c++14 -c -fPIC $ROCM_TARGETS $HIP_INCLUDE -o $OPS_O -DNO_CUBLASLT -DBITS_AND_BYTES_USE_ROCM $OPS_CU
+          . $HIPCC -std=c++14 -c -fPIC $ROCM_TARGETS $HIP_INCLUDE -o $KERNELS_O -DNO_CUBLASLT -DBITS_AND_BYTES_USE_ROCM $KERNELS_CU
+          . $GPP -std=c++14 -D__HIP_PLATFORM_HCC__ -D__HIP_PLATFORM_AMD__ -DBUILD_CUDA -DBITS_AND_BYTES_USE_ROCM -shared -fPIC $HIP_INCLUDE $OPS_O $KERNELS_O $FILES_CPP $HIP_LIB -o ./bitsandbytes/libbitsandbytes_hip_nohipblaslt.so
+          
+          $buildtag = "+rocm$env:ROCM_VERSION"
+          
+          python -m build --wheel -C--build-option=egg_info "-C--build-option=--tag-build=$buildtag"
+        
       - uses: actions/upload-artifact@v3
         with:
-          name: wheel
+          name: 'rocm-wheels'
           path: ./dist/*.whl

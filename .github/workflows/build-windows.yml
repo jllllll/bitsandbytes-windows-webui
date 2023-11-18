@@ -303,7 +303,7 @@ jobs:
           
       - name: Build Wheel
         run: |
-          python -m pip install build wheel
+          python -m pip install --upgrade build setuptools wheel
           python -m build -n --wheel -C--global-option=--plat-name=win_amd64
 
       - uses: actions/upload-artifact@v3

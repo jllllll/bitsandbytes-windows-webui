@@ -37,26 +37,31 @@ jobs:
       CUDAVER: ${{ matrix.cuda }}
 
     steps:
-      - name: Get Visual Studio Integration
-        if: matrix.cuda != '12.2.0'
-        uses: Jimver/cuda-toolkit@v0.2.10
+      - name: VS Integration Cache
+        id: vs-integration-cache
+        if: runner.os == 'Windows'
+        uses: actions/cache@v3.3.2
         with:
-          cuda: ${{ matrix.cuda }}
-          method: 'network'
-          sub-packages: '["visual_studio_integration"]'
+          path: ./MSBuildExtensions
+          key: cuda-${{ matrix.cuda }}-vs-integration
           
-      - name: Get Visual Studio Integration 12.2
-        if: matrix.cuda == '12.2.0'
+      - name: Get Visual Studio Integration
+        if: runner.os == 'Windows' && steps.vs-integration-cache.outputs.cache-hit != 'true'
         run: |
-          Invoke-RestMethod 'https://developer.download.nvidia.com/compute/cuda/12.2.0/network_installers/cuda_12.2.0_windows_network.exe' -OutFile "$env:RUNNER_TEMP\cudainstaller.exe"
-          Start-Process "$env:RUNNER_TEMP\cudainstaller.exe" -wait -ArgumentList '-s visual_studio_integration_12.2'
-          echo 'CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2' >> $env:GITHUB_ENV
+          if ($env:CUDAVER -eq '12.1.1') {$x = '12.1.0'} else {$x = $env:CUDAVER}
+          $links = (Invoke-RestMethod 'https://github.com/Jimver/cuda-toolkit/raw/257a101bc5c656053b5dc220126744980ef7f5b8/src/links/windows-links.ts').Trim().split().where({$_ -ne ''})
+          for ($i=$q=0;$i -lt $links.count -and $q -lt 2;$i++) {if ($links[$i] -eq "'$x',") {$q++}}
+          Invoke-RestMethod $links[$i].Trim("'") -OutFile 'cudainstaller.zip'
+          & 'C:\Program Files\7-Zip\7z.exe' e cudainstaller.zip -oMSBuildExtensions -r *\MSBuildExtensions\* > $null
+          Remove-Item 'cudainstaller.zip'
           
       - name: Install Visual Studio Integration
+        if: runner.os == 'Windows'
         run: |
-          $x = (dir $env:CUDA_PATH -dir -recurse -depth 2).where({$_.name -eq 'visual_studio_integration'}).fullname
-          $y = (dir $x -dir -recurse).where({$_.name -eq 'MSBuildExtensions'}).fullname + '\*'
+          $y = (gi '.\MSBuildExtensions').fullname + '\*'
           (gi 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\*\BuildCustomizations').fullname.foreach({cp $y $_})
+          $cupath = 'CUDA_PATH_V' + $env:CUDAVER.Remove($env:CUDAVER.LastIndexOf('.')).Replace('.','_')
+          echo "$cupath=$env:CONDA_PREFIX" >> $env:GITHUB_ENV
           
       - uses: actions/checkout@v3
         with:

@@ -1,7 +1,7 @@
 Set-Location $PSScriptRoot
 
 $destinationDir = if (Test-Path $(Join-Path $(Resolve-Path '.') 'index')) {Join-Path '.' 'index' -resolve} else {(New-Item 'index' -ItemType 'Directory').fullname}
-$packageVersions = "0.35.0","0.35.4","0.37.2","0.38.1","0.39.0","0.39.1","0.40.0","0.40.0.post4","0.40.1.post1","0.40.2","0.41.0","0.41.1"
+$packageVersions = "0.35.0","0.35.4","0.37.2","0.38.1","0.39.0","0.39.1","0.40.0","0.40.0.post4","0.40.1.post1","0.40.2","0.41.0","0.41.1","0.41.2.post2"
 $supportedSystems = 'win_amd64'
 $wheelSource = 'https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels'
 $packageName = 'bitsandbytes'
